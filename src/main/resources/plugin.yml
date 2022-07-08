@@ -1,0 +1,18 @@
+name: Tetris
+version: '${project.version}'
+main: me.ziprow.tetris.Tetris
+api-version: 1.8
+authors: [ Z1proW ]
+
+commands:
+  tetris:
+    description: Main command for Tetris. Use /tetris help for more info
+
+permissions:
+  tetris.user:
+    description: Allows player to use the plugin's user features
+    default: true
+
+  tetris.admin:
+    description: Allows player to use the plugin's admin features
+    default: op
