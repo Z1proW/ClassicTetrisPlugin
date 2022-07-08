@@ -28,7 +28,7 @@ public class BoardPanel
 		for(int y = 0; y < board.getHeight(); y++)
 			for(int x = 0; x < board.getWidth(); x++)
 			{
-				location.add(x, y, 0).getBlock().setType(makeColor(board.get(x, y)));
+				location.clone().add(x, y, 0).getBlock().setType(makeColor(board.get(x, y)));
 			}
 
 		Tetrimino current = game.getCurrent();
@@ -42,7 +42,7 @@ public class BoardPanel
 				byte b = current.getShape()[y][x];
 				if(b != 0)
 				{
-					location.add(x + current.getXOffset(), y + current.getYOffset(), 0).getBlock().setType(makeColor(b));
+					location.clone().add(x + current.getXOffset(), y + current.getYOffset(), 0).getBlock().setType(makeColor(b));
 				}
 			}
 	}

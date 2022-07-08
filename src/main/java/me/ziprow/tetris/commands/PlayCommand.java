@@ -17,8 +17,8 @@ public class PlayCommand implements SubCommand
 	public void onCommand(Player p, String[] args)
 	{
 		Location backupLocation = p.getLocation();
-		p.teleport(WORLD.getSpawnLocation());
-		new BoardPanel(p.getLocation().add(0, 40, 0), new Game(0));
+		p.teleport(WORLD.getHighestBlockAt(WORLD.getSpawnLocation()).getLocation());
+		new BoardPanel(p.getLocation().clone().add(0, 40, 0), new Game(0));
 	}
 
 	@Override
