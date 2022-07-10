@@ -29,16 +29,13 @@ public final class Tetris extends JavaPlugin
 	{
 		main = this;
 
-		loadConfig();
+		saveDefaultConfig();
 		loadLang();
 
 		registerCommands();
 		registerEvents();
-	}
 
-	private void loadConfig()
-	{
-		saveDefaultConfig();
+		saveResource("Classic Tetris.zip", true);
 	}
 
 	private void loadLang()
@@ -69,7 +66,7 @@ public final class Tetris extends JavaPlugin
 	public static void reload()
 	{
 		main.reloadConfig();
-		main.loadConfig();
+		main.saveDefaultConfig();
 		main.loadLang();
 
 		Bukkit.getLogger().info(ChatColor.stripColor(PREFIX) + "Settings Reloaded");

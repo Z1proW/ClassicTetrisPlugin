@@ -11,14 +11,10 @@ import org.bukkit.entity.Player;
 public class PlayCommand implements SubCommand
 {
 
-	private static final World WORLD = Bukkit.createWorld(new WorldCreator("classictetris"));
-
 	@Override
 	public void onCommand(Player p, String[] args)
 	{
-		Location backupLocation = p.getLocation();
-		p.teleport(WORLD.getHighestBlockAt(WORLD.getSpawnLocation()).getLocation());
-		new BoardPanel(p.getLocation().clone().add(0, 40, 0), new Game(0));
+		new BoardPanel(p, 0);
 	}
 
 	@Override

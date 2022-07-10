@@ -3,24 +3,78 @@ package me.ziprow.tetris;
 import me.ziprow.tetris.game.Board;
 import me.ziprow.tetris.game.Game;
 import me.ziprow.tetris.game.Tetrimino;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
 
-import static org.bukkit.Material.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Enumeration;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
+import static org.bukkit.Material.STONE;
+import static org.bukkit.Material.WOOL;
 
 public class BoardPanel
 {
 
-	private final Location location;
+	private final Location backupLoc;
+	private final World world;
 	private final Game game;
 	private final Board board;
 
-	public BoardPanel(Location location, Game game)
+	public BoardPanel(Player p, int startLevel)
 	{
-		this.location = location;
-		this.game = game;
+		backupLoc = p.getLocation();
+		world = createWorld(p);
+		assert world != null;
+		p.teleport(world.getSpawnLocation());
+		this.game = new Game(startLevel);
 		this.board = game.getBoard();
-		draw();
+
+		Bukkit.getScheduler().runTaskTimer(Tetris.get(), this::draw, 100, 100);
+	}
+
+	private World createWorld(Player p)
+	{
+		try
+		{
+			ZipFile zipFile = new ZipFile(new File(Tetris.get().getDataFolder(), "Classic Tetris.zip"));
+			Enumeration<?> enu = zipFile.entries();
+			while(enu.hasMoreElements())
+			{
+				ZipEntry zipEntry = (ZipEntry)enu.nextElement();
+				String name = zipEntry.getName();
+				File file = new File(name);
+				if(name.endsWith("/"))
+				{
+					file.mkdirs();
+					continue;
+				}
+				File parent = file.getParentFile();
+				if (parent != null)
+					parent.mkdirs();
+				InputStream in = zipFile.getInputStream(zipEntry);
+				FileOutputStream out = new FileOutputStream(file);
+				byte[] bytes = new byte[1024];
+				int length;
+				while((length = in.read(bytes)) >= 0)
+					out.write(bytes, 0, length);
+				in.close();
+				out.close();
+			}
+			zipFile.close();
+		}
+		catch(IOException e) {e.printStackTrace();}
+
+		File worldDir = new File(Bukkit.getServer().getWorldContainer(), "Classic Tetris");
+		worldDir.renameTo(new File(worldDir.getName() + p.getUniqueId()));
+		return Bukkit.getWorld(worldDir.getName());
 	}
 
 	public void draw()
@@ -28,7 +82,7 @@ public class BoardPanel
 		for(int y = 0; y < board.getHeight(); y++)
 			for(int x = 0; x < board.getWidth(); x++)
 			{
-				location.clone().add(x, y, 0).getBlock().setType(makeColor(board.get(x, y)));
+				world.getBlockAt(5 + x, 23 - y, 16).setType(makeColor(board.get(x, y)));
 			}
 
 		Tetrimino current = game.getCurrent();
@@ -42,7 +96,7 @@ public class BoardPanel
 				byte b = current.getShape()[y][x];
 				if(b != 0)
 				{
-					location.clone().add(x + current.getXOffset(), y + current.getYOffset(), 0).getBlock().setType(makeColor(b));
+					world.getBlockAt(5 + x + current.getXOffset(), 23 - (y + current.getYOffset()), 16).setType(makeColor(b));
 				}
 			}
 	}
