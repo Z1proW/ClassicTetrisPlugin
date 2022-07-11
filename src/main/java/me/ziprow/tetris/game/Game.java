@@ -1,5 +1,7 @@
 package me.ziprow.tetris.game;
 
+import me.ziprow.tetris.BoardPanel;
+
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -11,14 +13,16 @@ public class Game
 	GameState state = GameState.INITIALIZING;
 	private final Board board;
 	private final NextBox nextBox;
+	private final BoardPanel panel;
 	private Tetrimino current;
 	private final int startLevel;
 	private int level, linesCleared;
 	private long score;
 
-	public Game(int startLevel)
+	public Game(BoardPanel panel, int startLevel)
 	{
-		board = new Board(10, 20);
+		this.panel = panel;
+		board = new Board(10, 20, panel);
 		nextBox = new NextBox();
 		this.startLevel = startLevel;
 		level = startLevel;
@@ -53,7 +57,7 @@ public class Game
 			{
 				if(state == GameState.PLAYING)
 				{
-					// update
+					panel.draw();
 					moveDown();
 				}
 			}

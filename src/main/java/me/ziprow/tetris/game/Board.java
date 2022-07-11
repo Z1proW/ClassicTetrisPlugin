@@ -1,5 +1,7 @@
 package me.ziprow.tetris.game;
 
+import me.ziprow.tetris.BoardPanel;
+
 import java.util.*;
 
 public class Board
@@ -9,10 +11,13 @@ public class Board
 	private final int height;
 	private final byte[][] board;
 
-	Board(int width, int height)
+	private final BoardPanel panel;
+
+	Board(int width, int height, BoardPanel panel)
 	{
 		this.width = width;
 		this.height = height;
+		this.panel = panel;
 		board = new byte[height][width];
 	}
 
@@ -102,7 +107,7 @@ public class Board
 				{
 					board[y][x] = 0;
 					board[y][width-1 - x] = 0;
-					// update
+					panel.draw();
 				}
 				try {Thread.sleep(400/width);} catch(InterruptedException e) {throw new RuntimeException(e);}
 			}
@@ -131,7 +136,7 @@ public class Board
 				for(int x = 0; x < width; x++)
 					board[y][x] = (byte)(y % 3 + 1);
 
-				// update
+				panel.draw();
 				y++;
 				if(y >= height) cancel();
 			}

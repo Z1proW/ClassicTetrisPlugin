@@ -34,8 +34,6 @@ public final class Tetris extends JavaPlugin
 
 		registerCommands();
 		registerEvents();
-
-		saveResource("Classic Tetris.zip", true);
 	}
 
 	private void loadLang()
