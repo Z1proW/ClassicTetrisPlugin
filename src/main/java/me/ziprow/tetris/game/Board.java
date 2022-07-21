@@ -1,7 +1,5 @@
 package me.ziprow.tetris.game;
 
-import me.ziprow.tetris.BoardPanel;
-
 import java.util.*;
 
 public class Board
@@ -10,15 +8,14 @@ public class Board
 	private final int width;
 	private final int height;
 	private final byte[][] board;
+	private final Game game;
 
-	private final BoardPanel panel;
-
-	Board(int width, int height, BoardPanel panel)
+	Board(int width, int height, Game game)
 	{
 		this.width = width;
 		this.height = height;
-		this.panel = panel;
 		board = new byte[height][width];
+		this.game = game;
 	}
 
 	public boolean isInside(int x, int y)
@@ -107,7 +104,7 @@ public class Board
 				{
 					board[y][x] = 0;
 					board[y][width-1 - x] = 0;
-					panel.draw();
+					game.drawBoard();
 				}
 				try {Thread.sleep(400/width);} catch(InterruptedException e) {throw new RuntimeException(e);}
 			}
@@ -136,7 +133,7 @@ public class Board
 				for(int x = 0; x < width; x++)
 					board[y][x] = (byte)(y % 3 + 1);
 
-				panel.draw();
+				game.drawBoard();
 				y++;
 				if(y >= height) cancel();
 			}

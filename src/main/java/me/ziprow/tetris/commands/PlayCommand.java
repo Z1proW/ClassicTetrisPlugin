@@ -1,6 +1,6 @@
 package me.ziprow.tetris.commands;
 
-import me.ziprow.tetris.BoardPanel;
+import me.ziprow.tetris.game.Game;
 import org.bukkit.entity.Player;
 
 public class PlayCommand implements SubCommand
@@ -10,7 +10,7 @@ public class PlayCommand implements SubCommand
 	public void onCommand(Player p, String[] args)
 	{
 		int startLevel = args.length > 1 ? Integer.parseInt(args[1]) : 0;
-		new BoardPanel(p, startLevel);
+		new Game(p, startLevel);
 	}
 
 	@Override
