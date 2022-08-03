@@ -1,27 +1,21 @@
 package me.ziprow.tetris.game;
 
 import me.ziprow.tetris.Tetris;
+import me.ziprow.tetris.Utils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
-import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.util.*;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static org.bukkit.DyeColor.*;
 
@@ -35,13 +29,14 @@ public class Game implements Listener
 	private final NextBox nextBox;
 	private Tetrimino current;
 	private final int startLevel;
-	private int level, linesCleared;
-	private long score;
+	private int level, linesClearedLevel;
+	private long score, linesClearedTotal;
 
 	private final Player player;
 	private final Location backupLoc;
 	private final World world;
 	private final Location boardLocation;
+	private long softDrop;
 
 	@SuppressWarnings("deprecation")
 	public Game(Player player, int startLevel)
@@ -69,6 +64,10 @@ public class Game implements Listener
 		nextBox = new NextBox();
 		this.startLevel = startLevel;
 		level = startLevel;
+		softDrop = 0;
+
+		updateScoreboard();
+
 		start();
 	}
 
@@ -93,6 +92,15 @@ public class Game implements Listener
 		world.setTime(1000);
 
 		return world;
+	}
+
+	private void updateScoreboard()
+	{
+		Utils.showScoreBoard(player,
+				"Classic Tetris",
+				"Level: " + level,
+				"Lines: " + linesClearedTotal,
+				"Score: " + score);
 	}
 
 	public void drawBoard()
@@ -202,6 +210,8 @@ public class Game implements Listener
 
 	private long getGravityDelay()
 	{
+		player.sendMessage(player.isSneaking() ? "Sneaking" : "Not sneaking");
+
 		return switch(level)
 		{
 			case 0 -> 48;
@@ -298,9 +308,14 @@ public class Game implements Listener
 
 		current = null;
 
+		score += softDrop;
+		updateScoreboard();
+
 		int cleared = board.clearFullLines();
 
-		linesCleared += cleared;
+		linesClearedLevel += cleared;
+		linesClearedTotal += cleared;
+		updateScoreboard();
 
 		checkTransition();
 
@@ -312,6 +327,7 @@ public class Game implements Listener
 					case 3 ->  300L;
 					case 4 -> 1200L;
 				}*(level+1);
+		updateScoreboard();
 
 		updateCurrent();
 	}
@@ -320,10 +336,10 @@ public class Game implements Listener
 	{
 		if(startLevel == level)
 		{
-			if(linesCleared >= startLevel * 10L + 10 || linesCleared >= Math.max(100, startLevel * 10 - 50))
+			if(linesClearedLevel >= startLevel * 10L + 10 || linesClearedLevel >= Math.max(100, startLevel * 10 - 50))
 				transition();
 		}
-		else if(linesCleared >= 10)
+		else if(linesClearedLevel >= 10)
 			transition();
 	}
 
@@ -332,7 +348,8 @@ public class Game implements Listener
 		if(state == GameState.PLAYING)
 		{
 			level++;
-			linesCleared = 0;
+			updateScoreboard();
+			linesClearedLevel = 0;
 		}
 	}
 
@@ -360,8 +377,9 @@ public class Game implements Listener
 		nextBox.reset();
 		current = null;
 		level = startLevel;
-		linesCleared = 0;
+		linesClearedLevel = 0;
 		score = 0;
+		updateScoreboard();
 		start();
 	}
 
@@ -395,9 +413,9 @@ public class Game implements Listener
 		return score;
 	}
 
-	public int getLinesCleared()
+	public long getLinesClearedLevel()
 	{
-		return linesCleared;
+		return linesClearedTotal;
 	}
 
 	@EventHandler
@@ -425,10 +443,8 @@ public class Game implements Listener
 				moveLeft();
 			if(dx < 0)
 				moveRight();
-			if(dz > 0)
-				rotateClockwise();
-			if(dz < 0)
-				moveDown();
+			/*if(dz < 0)
+				moveDown();*/
 
 			player.teleport(new Location(world, .5, 10, .5));
 		}
@@ -437,14 +453,11 @@ public class Game implements Listener
 	@EventHandler
 	public void onSneak(PlayerToggleSneakEvent e)
 	{
-		System.out.println("onSneak");
 		if(state == GameState.GAME_OVER && e.getPlayer() == player && e.isSneaking())
 		{
 			player.teleport(backupLoc);
 			Bukkit.unloadWorld(world, false);
-			File f = new File(Bukkit.getWorldContainer(), "tetris" + player.getUniqueId());
-			if(f.exists())
-				f.delete();
+			new File(Bukkit.getWorldContainer(), world.getName()).delete();
 			HandlerList.unregisterAll(this);
 		}
 	}

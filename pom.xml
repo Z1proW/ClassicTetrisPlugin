@@ -12,7 +12,7 @@
     <name>ClassicTetrisPlugin</name>
 
     <properties>
-        <java.version>${java.version}</java.version>
+        <java.version>18</java.version>
         <project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
     </properties>
 
@@ -39,7 +39,7 @@
                         </goals>
                         <configuration>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
-                            <outputFile>D:\Z1proW\Documents\localhost - 1.8.9\plugins\Tetris.jar</outputFile>
+                            <outputFile>C:\Users\z1pro\Documents\localhost\plugins\Tetris.jar</outputFile>
                         </configuration>
                     </execution>
                 </executions>
