@@ -1,6 +1,5 @@
 package me.ziprow.tetris.game;
 
-import me.ziprow.tetris.Tetris;
 import me.ziprow.tetris.Utils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -41,8 +40,6 @@ public class Game implements Listener
 	@SuppressWarnings("deprecation")
 	public Game(Player player, int startLevel)
 	{
-		Bukkit.getPluginManager().registerEvents(this, Tetris.get());
-
 		this.player = player;
 		backupLoc = player.getLocation();
 
@@ -146,25 +143,20 @@ public class Game implements Listener
 								default -> LIGHT_BLUE;
 								case 1 -> LIME;
 								case 2 -> PINK;
-								case 3 -> GREEN;
-								case 4 -> GREEN;
+								case 3, 4 -> GREEN;
 								case 5 -> CYAN;
 								case 6 -> SILVER;
-								case 7 -> RED;
-								case 8 -> RED;
+								case 7, 8 -> RED;
 								case 9 -> ORANGE;
 							};
 					case 3 -> switch(level % 10)
 							{
-								default -> BLUE;
+								default -> BLUE; // 3, 8
 								case 1 -> GREEN;
-								case 2 -> MAGENTA;
-								case 3 -> BLUE;
-								case 4 -> MAGENTA;
+								case 2, 4 -> MAGENTA;
 								case 5 -> LIME;
 								case 6 -> RED;
 								case 7 -> PURPLE;
-								case 8 -> BLUE;
 								case 9 -> ORANGE;
 							};
 				}).getWoolData();

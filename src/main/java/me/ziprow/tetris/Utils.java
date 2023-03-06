@@ -1,16 +1,14 @@
 package me.ziprow.tetris;
 
 import org.apache.commons.lang3.StringUtils;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.potion.PotionEffect;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
-
-import java.util.*;
 
 public final class Utils
 {
@@ -24,36 +22,10 @@ public final class Utils
 		return ChatColor.translateAlternateColorCodes('&', s);
 	}
 
-	public static <K, V> Map<K, V> map(Object... inputs)
-	{
-		if((inputs.length & 1) != 0) // + null check
-			throw new InternalError("length is odd");
-
-		Map<K, V> map = new HashMap<>();
-
-		for(int i = 0; i < inputs.length; i += 2)
-		{
-			@SuppressWarnings("unchecked")
-			K k = Objects.requireNonNull((K)inputs[i]);
-			@SuppressWarnings("unchecked")
-			V v = Objects.requireNonNull((V)inputs[i+1]);
-			map.put(k, v);
-		}
-
-		return map;
-	}
-
-	/* Player */
-
-	public static void sendMessage(Player p, String msg)
-	{
-		p.sendMessage(Utils.color(msg));
-	}
-
 	public static void sendMessage(Player p, String... msgs)
 	{
 		for(String msg : msgs)
-			sendMessage(p, msg);
+			p.sendMessage(Utils.color(msg));
 	}
 
 	public static void inform(Player p, String... msgs)
@@ -74,20 +46,6 @@ public final class Utils
 	public static void playSound(Player p, Sound sound)
 	{
 		p.playSound(p.getLocation(), sound, 1f, 1f);
-	}
-
-	public static void clear(Player p)
-	{
-		PlayerInventory inv = p.getInventory();
-		inv.clear();
-		inv.setHelmet(null);
-		inv.setChestplate(null);
-		inv.setLeggings(null);
-		inv.setBoots(null);
-		p.setFoodLevel(20);
-		p.setTotalExperience(0);
-		for(PotionEffect effect : p.getActivePotionEffects())
-			p.removePotionEffect(effect.getType());
 	}
 
 	public static void showScoreBoard(Player p, String title, String... lines)
