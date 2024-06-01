@@ -1,6 +1,7 @@
 package me.ziprow.tetris.game;
 
 import me.ziprow.tetris.Tetris;
+import me.ziprow.tetris.Utils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -12,6 +13,8 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
@@ -20,8 +23,6 @@ import static org.bukkit.DyeColor.*;
 
 public class Game implements Listener
 {
-
-//	private static final double TICK_TIME = 20; // 1000/60 = 16.67ms delay between ticks with 60fps in the original game
 
 	GameState state = GameState.INITIALIZING;
 	private final Board board;
@@ -35,13 +36,10 @@ public class Game implements Listener
 	private final PlayerInventory backupInv;
 	private final World world;
 	private final Location boardLocation;
-	private long softDrop;
 
 	@SuppressWarnings("deprecation")
 	public Game(Player player, int startLevel)
 	{
-		Bukkit.getPluginManager().registerEvents(this, Tetris.get());
-
 		this.player = player;
 		backupLoc = player.getLocation();
 		backupInv = player.getInventory();
@@ -68,7 +66,6 @@ public class Game implements Listener
 		nextBox = new NextBox();
 		this.startLevel = startLevel;
 		level = startLevel;
-		softDrop = 0;
 
 		updateScoreboard();
 
@@ -345,7 +342,6 @@ public class Game implements Listener
 
 		current = null;
 
-		score += softDrop;
 		updateScoreboard();
 
 		int cleared = board.clearFullLines();
@@ -504,6 +500,116 @@ public class Game implements Listener
 			new File(Bukkit.getWorldContainer(), world.getName()).delete();
 			HandlerList.unregisterAll(this);
 		}
+	}
+
+	public void playSound(GameSound gameSound)
+	{
+		switch(gameSound)
+		{
+			case MOVE -> player.playSound(player.getLocation(), Sound.NOTE_PIANO, 0.2f, 2f);
+			case DROP -> player.playSound(player.getLocation(), Sound.NOTE_BASS_GUITAR, 0.2f, 0f);
+			case ROTATE ->
+			{
+				player.playSound(player.getLocation(), Sound.NOTE_SNARE_DRUM, 0.1f, 0.9f);
+
+				new BukkitRunnable()
+				{
+					@Override
+					public void run()
+					{
+						player.playSound(player.getLocation(), Sound.NOTE_SNARE_DRUM, 0.1f, 0.9f);
+					}
+				}.runTaskLater(Tetris.get(), 3);
+			}
+			case LINE_CLEAR ->
+			{
+				player.playSound(player.getLocation(), Sound.NOTE_PIANO, 0.3f, 0.7f);
+
+				new BukkitRunnable()
+				{
+					float p = 1.8f;
+
+					@Override
+					public void run()
+					{
+						player.playSound(player.getLocation(), Sound.NOTE_PIANO, 0.2f, p);
+						p *= 0.9f;
+						if(p < 0.5f)
+							cancel();
+					}
+				}.runTaskTimer(Tetris.get(), 3, 1);
+			}
+			case TETRIS ->
+			{
+				new BukkitRunnable()
+				{
+					int i = 0;
+
+					@Override
+					public void run()
+					{
+						player.playSound(player.getLocation(), Sound.NOTE_PIANO, 0.2f, 1.4f + (i%2)*0.4f);
+						i++;
+						if(i > 6)
+							cancel();
+					}
+				}.runTaskTimer(Tetris.get(), 0, 1);
+			}
+			case LEVEL_UP ->
+			{
+				new BukkitRunnable()
+				{
+					int i = 0;
+
+					@Override
+					public void run()
+					{
+						player.playSound(player.getLocation(), Sound.NOTE_PIANO, 0.3f, 1f + (i%2)*0.4f);
+						i++;
+						if(i == 6)
+							cancel();
+					}
+				}.runTaskTimer(Tetris.get(), 0, 3);
+
+				new BukkitRunnable()
+				{
+					int i = 1;
+
+					@Override
+					public void run()
+					{
+						player.playSound(player.getLocation(), Sound.NOTE_PIANO, 0.3f, 1.4f + (i%2)*0.4f);
+						i++;
+						if(i == 5)
+							cancel();
+					}
+				}.runTaskTimer(Tetris.get(), 18, 3);
+			}
+			case GAME_OVER ->
+			{
+				new BukkitRunnable()
+				{
+					int i = 0;
+					float v = 0.2f;
+
+					@Override
+					public void run()
+					{
+						player.playSound(player.getLocation(), Sound.BLAZE_DEATH, v, 0f);
+						player.playSound(player.getLocation(), Sound.ITEM_BREAK, v, 0f);
+						i++;
+						v *= 0.6f;
+						if(i > 10)
+							cancel();
+					}
+				}.runTaskTimer(Tetris.get(), 0, 3);
+			}
+		}
+	}
+
+	public Plugin getPlugin()
+	{
+		return Tetris.get();
 	}
 
 }

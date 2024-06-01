@@ -12,10 +12,12 @@ public final class Tetris extends JavaPlugin
 
 	public static final String MAIN_COLOR = "&c";
 	public static final String PREFIX = Utils.color("&8[" + MAIN_COLOR + "Tetris&8] &r");
+	private static Tetris main;
 
 	@Override
 	public void onEnable()
 	{
+		main = this;
 		registerCommands();
 	}
 
@@ -31,6 +33,11 @@ public final class Tetris extends JavaPlugin
 		// TODO
 
 		Bukkit.getLogger().info(ChatColor.stripColor(PREFIX) + "Settings Reloaded");
+	}
+
+	public static Tetris get()
+	{
+		return main;
 	}
 
 }
