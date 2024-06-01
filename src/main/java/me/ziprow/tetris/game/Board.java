@@ -1,5 +1,7 @@
 package me.ziprow.tetris.game;
 
+import org.bukkit.scheduler.BukkitRunnable;
+
 import java.util.*;
 
 public class Board
@@ -55,7 +57,10 @@ public class Board
 		for(int y = 0; y < t.getShape().length; y++)
 			for(int x = 0; x < t.getShape()[y].length; x++)
 				if(t.getShape()[y][x] != 0)
+				{
 					board[t.getYOffset() + y][t.getXOffset() + x] = t.getShape()[y][x];
+					game.playSound(GameSound.DROP);
+				}
 	}
 
 	private boolean isFull(int line)
@@ -98,18 +103,25 @@ public class Board
 
 		if(cleared > 0)
 		{
-			for(int x = width/2; x >= 0; x--)
-			{
-				for(int y : linesToClear)
+			new BukkitRunnable() {
+				int x = width/2;
+				@Override
+				public void run()
 				{
-					board[y][x] = 0;
-					board[y][width-1 - x] = 0;
-					game.drawBoard();
+					for(int y : linesToClear)
+					{
+						board[y][x] = 0;
+						board[y][width-1 - x] = 0;
+						game.drawBoard();
+					}
+					x--;
+					if(x < 0)
+					{
+						linesToMoveDown.forEach(y -> moveDown(y, downMap.get(y)));
+						cancel();
+					}
 				}
-				try {Thread.sleep(400/width);} catch(InterruptedException e) {throw new RuntimeException(e);}
-			}
-
-			linesToMoveDown.forEach(y -> moveDown(y, downMap.get(y)));
+			}.runTaskTimer(game.getPlugin(), 0, 2);
 		}
 
 		return cleared;
@@ -124,8 +136,7 @@ public class Board
 
 	public void close()
 	{
-		new Timer().schedule(new TimerTask()
-		{
+		new BukkitRunnable() {
 			int y = 0;
 			@Override
 			public void run()
@@ -137,7 +148,7 @@ public class Board
 				y++;
 				if(y >= height) cancel();
 			}
-		}, 0, 80);
+		}.runTaskTimer(game.getPlugin(), 0, 4);
 	}
 
 	public int get(int x, int y)

@@ -1,6 +1,6 @@
 package me.ziprow.tetris.game;
 
-import me.ziprow.tetris.Utils;
+import me.ziprow.tetris.Tetris;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -11,17 +11,17 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import static org.bukkit.DyeColor.*;
 
 public class Game implements Listener
 {
 
-	private static final double TICK_TIME = 16.66; // 1000/60 = 16.67ms delay between ticks with 60fps
+//	private static final double TICK_TIME = 20; // 1000/60 = 16.67ms delay between ticks with 60fps in the original game
 
 	GameState state = GameState.INITIALIZING;
 	private final Board board;
@@ -30,9 +30,9 @@ public class Game implements Listener
 	private final int startLevel;
 	private int level, linesClearedLevel;
 	private long score, linesClearedTotal;
-
 	private final Player player;
 	private final Location backupLoc;
+	private final PlayerInventory backupInv;
 	private final World world;
 	private final Location boardLocation;
 	private long softDrop;
@@ -40,8 +40,15 @@ public class Game implements Listener
 	@SuppressWarnings("deprecation")
 	public Game(Player player, int startLevel)
 	{
+		Bukkit.getPluginManager().registerEvents(this, Tetris.get());
+
 		this.player = player;
 		backupLoc = player.getLocation();
+		backupInv = player.getInventory();
+
+		player.getInventory().clear();
+		player.getInventory().setItem(0, new ItemStack(Material.TRIPWIRE_HOOK));
+		player.getInventory().setHeldItemSlot(0);
 
 		world = createWorld(player);
 		player.teleport(new Location(world, .5, 10, .5));
@@ -86,6 +93,9 @@ public class Game implements Listener
 		world.setGameRuleValue("doMobSpawning", "false");
 		world.setGameRuleValue("doFireTick", "false");
 		world.setGameRuleValue("doWeatherCycle", "false");
+		world.setStorm(false);
+		world.setThundering(false);
+		world.setWeatherDuration(Integer.MAX_VALUE);
 		world.setTime(1000);
 
 		return world;
@@ -143,20 +153,25 @@ public class Game implements Listener
 								default -> LIGHT_BLUE;
 								case 1 -> LIME;
 								case 2 -> PINK;
-								case 3, 4 -> GREEN;
+								case 3 -> GREEN;
+								case 4 -> GREEN;
 								case 5 -> CYAN;
 								case 6 -> SILVER;
-								case 7, 8 -> RED;
+								case 7 -> RED;
+								case 8 -> RED;
 								case 9 -> ORANGE;
 							};
 					case 3 -> switch(level % 10)
 							{
-								default -> BLUE; // 3, 8
+								default -> BLUE;
 								case 1 -> GREEN;
-								case 2, 4 -> MAGENTA;
+								case 2 -> MAGENTA;
+								case 3 -> BLUE;
+								case 4 -> MAGENTA;
 								case 5 -> LIME;
 								case 6 -> RED;
 								case 7 -> PURPLE;
+								case 8 -> BLUE;
 								case 9 -> ORANGE;
 							};
 				}).getWoolData();
@@ -168,6 +183,8 @@ public class Game implements Listener
 		{
 			state = GameState.PLAYING;
 			updateCurrent();
+			drawBoard();
+			drawCurrent();
 			startGravity();
 		}
 	}
@@ -184,7 +201,7 @@ public class Game implements Listener
 
 	private void startGravity()
 	{
-		new Timer().schedule(new TimerTask()
+		new BukkitRunnable()
 		{
 			@Override
 			public void run()
@@ -197,13 +214,11 @@ public class Game implements Listener
 				}
 				else cancel();
 			}
-		}, (long)(100*TICK_TIME), (long)(getGravityDelay()*TICK_TIME));
+		}.runTaskTimer(Tetris.get(), 100, getGravityDelay());
 	}
 
 	private long getGravityDelay()
 	{
-		player.sendMessage(player.isSneaking() ? "Sneaking" : "Not sneaking");
-
 		return switch(level)
 		{
 			case 0 -> 48;
@@ -238,6 +253,12 @@ public class Game implements Listener
 			current.rotateClockwise();
 			if(board.isBlocked(current))
 				current.rotateCounterClockwise();
+			else
+			{
+				playSound(GameSound.ROTATE);
+				drawBoard();
+				drawCurrent();
+			}
 		}
 	}
 
@@ -248,6 +269,12 @@ public class Game implements Listener
 			current.rotateCounterClockwise();
 			if(board.isBlocked(current))
 				current.rotateClockwise();
+			else
+			{
+				playSound(GameSound.ROTATE);
+				drawBoard();
+				drawCurrent();
+			}
 		}
 	}
 
@@ -258,6 +285,12 @@ public class Game implements Listener
 			current.move(-1, 0);
 			if(board.isBlocked(current))
 				current.move(1, 0);
+			else
+			{
+				playSound(GameSound.MOVE);
+				drawBoard();
+				drawCurrent();
+			}
 		}
 	}
 
@@ -268,6 +301,12 @@ public class Game implements Listener
 			current.move(1, 0);
 			if(board.isBlocked(current))
 				current.move(-1, 0);
+			else
+			{
+				playSound(GameSound.MOVE);
+				drawBoard();
+				drawCurrent();
+			}
 		}
 	}
 
@@ -281,15 +320,19 @@ public class Game implements Listener
 			{
 				current.move(0, -1);
 
-				new Timer().schedule(new TimerTask()
-				{
+				new BukkitRunnable() {
 					@Override
 					public void run()
 					{
 						if(current != null && board.isPlacable(current))
 							placeCurrent();
 					}
-				}, (long)(10*TICK_TIME));
+				}.runTaskLater(Tetris.get(), 10);
+			}
+			else
+			{
+				drawBoard();
+				drawCurrent();
 			}
 		}
 	}
@@ -297,6 +340,8 @@ public class Game implements Listener
 	private void placeCurrent()
 	{
 		board.place(current);
+
+		drawBoard();
 
 		current = null;
 
@@ -321,6 +366,12 @@ public class Game implements Listener
 				}*(level+1);
 		updateScoreboard();
 
+		switch(cleared)
+		{
+			case 1, 2, 3 -> playSound(GameSound.LINE_CLEAR);
+			case 4 -> playSound(GameSound.TETRIS);
+		}
+
 		updateCurrent();
 	}
 
@@ -339,18 +390,11 @@ public class Game implements Listener
 	{
 		if(state == GameState.PLAYING)
 		{
+			playSound(GameSound.LEVEL_UP);
 			level++;
 			updateScoreboard();
 			linesClearedLevel = 0;
 		}
-	}
-
-	public void pause()
-	{
-		if(state == GameState.PLAYING)
-			state = GameState.PAUSED;
-		else if(state == GameState.PAUSED)
-			state = GameState.PLAYING;
 	}
 
 	public void gameOver()
@@ -359,7 +403,10 @@ public class Game implements Listener
 		try {Thread.sleep(1000);}
 		catch(InterruptedException e) {throw new RuntimeException(e);}
 		current = null;
+		playSound(GameSound.GAME_OVER);
 		board.close();
+		// tell player to sneak to exit
+		player.sendMessage(ChatColor.RED + "Game Over! Sneak to exit.");
 	}
 
 	public void reset()
@@ -435,8 +482,10 @@ public class Game implements Listener
 				moveLeft();
 			if(dx < 0)
 				moveRight();
-			/*if(dz < 0)
-				moveDown();*/
+//			if(dz > 0)
+//				rotateClockwise();
+			if(dz < 0)
+				moveDown();
 
 			player.teleport(new Location(world, .5, 10, .5));
 		}
@@ -445,9 +494,12 @@ public class Game implements Listener
 	@EventHandler
 	public void onSneak(PlayerToggleSneakEvent e)
 	{
+		System.out.println("onSneak");
 		if(state == GameState.GAME_OVER && e.getPlayer() == player && e.isSneaking())
 		{
 			player.teleport(backupLoc);
+			player.getInventory().clear();
+			player.getInventory().setContents(backupInv.getContents());
 			Bukkit.unloadWorld(world, false);
 			new File(Bukkit.getWorldContainer(), world.getName()).delete();
 			HandlerList.unregisterAll(this);

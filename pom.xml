@@ -12,8 +12,8 @@
     <name>ClassicTetrisPlugin</name>
 
     <properties>
-        <java.version>18</java.version>
-        <project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
+        <java.version>1.8</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <build>
@@ -23,8 +23,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
+                    <source>14</source>
+                    <target>14</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -39,7 +39,7 @@
                         </goals>
                         <configuration>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
-                            <outputFile>C:\Users\z1pro\Documents\localhost\plugins\Tetris.jar</outputFile>
+                            <outputFile>D:\Z1proW\Documents\localhost - 1.8.9\plugins\Tetris.jar</outputFile>
                         </configuration>
                     </execution>
                 </executions>
