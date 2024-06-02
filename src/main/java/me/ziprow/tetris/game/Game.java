@@ -15,8 +15,6 @@ import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
@@ -38,6 +36,8 @@ public class Game implements Listener
 	private final PlayerInventory backupInv;
 	private final World world;
 	private final Location boardLocation;
+	private int dasCounter = 0;
+	private boolean hasMoved = false;
 
 	@SuppressWarnings("deprecation")
 	public Game(Player player, int startLevel)
@@ -496,12 +496,24 @@ public class Game implements Listener
 			double dx = e.getTo().getX() - e.getFrom().getX();
 			double dz = e.getTo().getZ() - e.getFrom().getZ();
 
-			if(dx > 0)
-				moveLeft();
-			if(dx < 0)
-				moveRight();
-//			if(dz > 0)
-//				rotateClockwise();
+			player.sendMessage("dx: " + dx);
+
+			if(!((dx > 0.1425 && dx < 0.2) || (dx < -0.1425 && dx > -0.2))) // if not holding down
+				hasMoved = false;
+
+			if(!hasMoved)
+			{
+				if(dx > 0)
+					moveLeft();
+				if(dx < 0)
+					moveRight();
+
+				hasMoved = true;
+			}
+			else hasMoved = false;
+
+			/*if(dz > 0)
+					rotateClockwise();*/
 			if(dz < 0)
 				moveDown();
 
