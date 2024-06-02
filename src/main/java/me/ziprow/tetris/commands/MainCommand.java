@@ -15,7 +15,6 @@ public class MainCommand implements CommandExecutor
 	static final Map<String, SubCommand> SUB_COMMANDS = new HashMap<>()
 	{{
 		put("help", new HelpCommand());
-		put("reload", new ReloadCommand());
 		put("play", new PlayCommand());
 	}};
 

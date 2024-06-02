@@ -22,4 +22,10 @@ public class PlayCommand implements SubCommand
 		return "tetris.user";
 	}
 
+	@Override
+	public Object getDescription()
+	{
+		return "Start a game of Tetris at level 0 or a specified level by providing a number.";
+	}
+
 }

@@ -9,4 +9,6 @@ interface SubCommand
 
 	String getPermission();
 
+	Object getDescription();
+
 }

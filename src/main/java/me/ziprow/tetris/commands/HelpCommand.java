@@ -17,7 +17,7 @@ class HelpCommand implements SubCommand
 				ChatColor.DARK_PURPLE + Utils.LINE_SEPARATOR);
 
 		for(Map.Entry<String, SubCommand> subCommand : MainCommand.SUB_COMMANDS.entrySet())
-			Utils.sendMessage(p, ChatColor.DARK_PURPLE + "- " + Tetris.MAIN_COLOR + "/tetris " + ChatColor.GRAY + subCommand.getKey());
+			Utils.sendMessage(p, ChatColor.DARK_PURPLE + "- " + Tetris.MAIN_COLOR + "/tetris " + ChatColor.GRAY + subCommand.getKey() + ChatColor.DARK_PURPLE + " - " + ChatColor.GRAY + subCommand.getValue().getDescription());
 
 		Utils.sendMessage(p, ChatColor.DARK_PURPLE + Utils.LINE_SEPARATOR);
 	}
@@ -26,6 +26,12 @@ class HelpCommand implements SubCommand
 	public String getPermission()
 	{
 		return "tetris.user";
+	}
+
+	@Override
+	public Object getDescription()
+	{
+		return "Display this help message.";
 	}
 
 }

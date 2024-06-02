@@ -40,7 +40,7 @@ public final class Utils
 		playSound(p, Sound.BAT_DEATH);
 		sendMessage(p, "", Tetris.PREFIX);
 		for(String msg : msgs)
-			sendMessage(p, WARN_COLOR + "\u26A0 " + msg.toUpperCase() + " !");
+			sendMessage(p, WARN_COLOR + "⚠ " + msg.toUpperCase() + " !");
 	}
 
 	public static void playSound(Player p, Sound sound)

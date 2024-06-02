@@ -405,7 +405,7 @@ public class Game implements Listener
 		player.sendMessage(ChatColor.RED + "Game Over! Sneak to exit.");
 	}
 
-	public void reset()
+	public void reset() // TODO: add reset button
 	{
 		state = GameState.INITIALIZING;
 		board.clear();
@@ -490,7 +490,6 @@ public class Game implements Listener
 	@EventHandler
 	public void onSneak(PlayerToggleSneakEvent e)
 	{
-		System.out.println("onSneak");
 		if(state == GameState.GAME_OVER && e.getPlayer() == player && e.isSneaking())
 		{
 			player.teleport(backupLoc);

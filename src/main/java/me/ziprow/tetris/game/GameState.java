@@ -4,7 +4,7 @@ enum GameState
 {
 	INITIALIZING,
 	PLAYING,
-	PAUSED,
+	PAUSED, // TODO: Implement pause
 	GAME_OVER
 }
 
