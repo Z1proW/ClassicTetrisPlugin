@@ -15,6 +15,8 @@ import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
@@ -180,14 +182,28 @@ public class Game implements Listener
 		{
 			state = GameState.PLAYING;
 			updateCurrent();
-			drawBoard();
-			drawCurrent();
+
+			new BukkitRunnable()
+			{
+				@Override
+				public void run()
+				{
+					if(state == GameState.PLAYING)
+					{
+						drawBoard();
+						drawCurrent();
+					}
+					else cancel();
+				}
+			}.runTaskTimer(Tetris.get(), 0, 1);
+
 			startGravity();
 		}
 	}
 
 	private void updateCurrent()
 	{
+		if(state == GameState.GAME_OVER) return;
 		current = nextBox.getAndUpdate();
 		current.reset();
 		current.move(board.getWidth()/2, 0);
@@ -205,8 +221,8 @@ public class Game implements Listener
 			{
 				if(state == GameState.PLAYING)
 				{
-					drawBoard();
-					drawCurrent();
+//					drawBoard();
+//					drawCurrent();
 					moveDown();
 				}
 				else cancel();
@@ -253,8 +269,8 @@ public class Game implements Listener
 			else
 			{
 				playSound(GameSound.ROTATE);
-				drawBoard();
-				drawCurrent();
+//				drawBoard();
+//				drawCurrent();
 			}
 		}
 	}
@@ -269,8 +285,8 @@ public class Game implements Listener
 			else
 			{
 				playSound(GameSound.ROTATE);
-				drawBoard();
-				drawCurrent();
+//				drawBoard();
+//				drawCurrent();
 			}
 		}
 	}
@@ -285,8 +301,8 @@ public class Game implements Listener
 			else
 			{
 				playSound(GameSound.MOVE);
-				drawBoard();
-				drawCurrent();
+//				drawBoard();
+//				drawCurrent();
 			}
 		}
 	}
@@ -301,8 +317,8 @@ public class Game implements Listener
 			else
 			{
 				playSound(GameSound.MOVE);
-				drawBoard();
-				drawCurrent();
+//				drawBoard();
+//				drawCurrent();
 			}
 		}
 	}
@@ -326,11 +342,11 @@ public class Game implements Listener
 					}
 				}.runTaskLater(Tetris.get(), 10);
 			}
-			else
-			{
-				drawBoard();
-				drawCurrent();
-			}
+//			else
+//			{
+//				drawBoard();
+//				drawCurrent();
+//			}
 		}
 	}
 
@@ -338,7 +354,7 @@ public class Game implements Listener
 	{
 		board.place(current);
 
-		drawBoard();
+//		drawBoard();
 
 		current = null;
 
@@ -396,13 +412,19 @@ public class Game implements Listener
 	public void gameOver()
 	{
 		state = GameState.GAME_OVER;
-		try {Thread.sleep(1000);}
-		catch(InterruptedException e) {throw new RuntimeException(e);}
-		current = null;
-		playSound(GameSound.GAME_OVER);
-		board.close();
-		// tell player to sneak to exit
-		player.sendMessage(ChatColor.RED + "Game Over! Sneak to exit.");
+
+		new BukkitRunnable()
+		{
+			@Override
+			public void run()
+			{
+				current = null;
+				playSound(GameSound.GAME_OVER);
+				board.close();
+				// tell player to sneak to exit
+				player.sendMessage(ChatColor.RED + "Game Over! Sneak to exit.");
+			}
+		}.runTaskLater(Tetris.get(), 20);
 	}
 
 	public void reset() // TODO: add reset button
